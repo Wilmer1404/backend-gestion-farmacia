@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/sales")
-@RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000") 
+@RequiredArgsConstructor 
+@CrossOrigin(origins = "http://localhost:3000")
 public class SaleController {
 
     private final SaleService saleService;

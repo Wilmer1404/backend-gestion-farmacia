@@ -1,11 +1,11 @@
 package com.farmasystem.backend.dto;
 
-import lombok.Data;
+import lombok.Data; // <--- Magia
 import java.util.List;
 
-@Data
+@Data 
 public class SaleRequest {
-    private Long sellerId; 
+    private Long sellerId;
     private String clientDni;
     private List<SaleItemRequest> items;
 

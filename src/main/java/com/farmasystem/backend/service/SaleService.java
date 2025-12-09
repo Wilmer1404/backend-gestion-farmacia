@@ -4,7 +4,7 @@ import com.farmasystem.backend.dto.SaleRequest;
 import com.farmasystem.backend.model.*;
 import com.farmasystem.backend.repository.*;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import lombok.RequiredArgsConstructor; 
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,14 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor 
 public class SaleService {
 
     private final ProductRepository productRepository;
     private final BatchRepository batchRepository;
     private final SaleRepository saleRepository;
 
-    @Transactional 
+    @Transactional
     public Sale createSale(SaleRequest request) {
         Sale sale = new Sale();
         sale.setCreatedAt(LocalDateTime.now());
@@ -31,7 +31,7 @@ public class SaleService {
 
         for (SaleRequest.SaleItemRequest item : request.getItems()) {
             Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + item.getProductId()));
 
             List<Batch> batches = batchRepository.findAvailableBatches(item.getProductId());
             
