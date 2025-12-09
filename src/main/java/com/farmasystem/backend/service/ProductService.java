@@ -31,11 +31,9 @@ public class ProductService {
         product.setBarcode(request.getBarcode());
         product.setSalePrice(request.getSalePrice());
         product.setMinStock(request.getMinStock());
+        product.setProvider(request.getProvider());
         product.setCreatedAt(LocalDateTime.now());
 
-        product.setProvider(request.getProvider());
-        
-        
         Product savedProduct = productRepository.save(product);
 
         if (request.getInitialBatch() != null) {
@@ -49,14 +47,14 @@ public class ProductService {
     public Product updateProduct(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-        
+
         product.setName(request.getName());
         product.setSku(request.getSku());
         product.setBarcode(request.getBarcode());
         product.setSalePrice(request.getSalePrice());
         product.setMinStock(request.getMinStock());
         product.setProvider(request.getProvider());
-        
+
         return productRepository.save(product);
     }
 
