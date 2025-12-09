@@ -4,6 +4,7 @@ import com.farmasystem.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
+@EnableJpaAuditing
 @RequiredArgsConstructor
 public class ApplicationConfig {
 
@@ -40,13 +42,7 @@ public class ApplicationConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Configuración de Argon2
-        int saltLength = 16; 
-        int hashLength = 32; 
-        int parallelism = 1; 
-        int memory = 4096;   
-        int iterations = 3; 
-
-        return new Argon2PasswordEncoder(saltLength, hashLength, parallelism, memory, iterations);
+        // Configuración segura de Argon2
+        return new Argon2PasswordEncoder(16, 32, 1, 4096, 3);
     }
 }

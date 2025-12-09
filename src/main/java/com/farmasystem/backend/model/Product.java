@@ -35,6 +35,6 @@ public class Product extends BaseEntity {
     @Column(name = "provider")
     private String provider; 
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Batch> batches;
 }

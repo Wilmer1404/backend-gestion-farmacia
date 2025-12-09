@@ -17,6 +17,10 @@ public class Sale extends BaseEntity {
     @Column(name = "client_doc")
     private String clientDoc;
 
+    // --- ESTE CAMPO FALTABA ---
+    @Column(name = "client_name")
+    private String clientName; 
+
     @Column(nullable = false)
     private BigDecimal total;
 

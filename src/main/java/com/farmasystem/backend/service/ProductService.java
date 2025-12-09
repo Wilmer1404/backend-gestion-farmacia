@@ -20,7 +20,8 @@ public class ProductService {
     private final BatchRepository batchRepository;
 
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        // Usamos la consulta optimizada para evitar N+1 queries
+        return productRepository.findAllWithBatches();
     }
 
     @Transactional
@@ -36,7 +37,9 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        if (savedProduct.getId() != null) {
+        // CORRECCIÓN 1: Validamos que el ID no sea nulo Y que exista un lote inicial antes de procesarlo
+        // Esto evita el NullPointerException si creas un producto sin stock inicial
+        if (savedProduct.getId() != null && request.getInitialBatch() != null) {
             addBatchToProduct(savedProduct.getId(), request.getInitialBatch());
         }
 
@@ -45,6 +48,9 @@ public class ProductService {
 
     @Transactional
     public Product updateProduct(Long id, ProductRequest request) {
+        // CORRECCIÓN 2: Validación de seguridad
+        if (id == null) throw new IllegalArgumentException("El ID del producto es obligatorio");
+
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
@@ -60,12 +66,15 @@ public class ProductService {
 
     @Transactional
     public void deleteProduct(Long id) {
-        // Gracias a @SQLDelete en la entidad, esto hace un borrado lógico
+        if (id == null) throw new IllegalArgumentException("El ID del producto es obligatorio");
         productRepository.deleteById(id);
     }
 
     @Transactional
     public Batch addBatchToProduct(Long productId, ProductRequest.BatchRequest batchRequest) {
+        // CORRECCIÓN 3: Validación de seguridad
+        if (productId == null) throw new IllegalArgumentException("El ID del producto es obligatorio");
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 

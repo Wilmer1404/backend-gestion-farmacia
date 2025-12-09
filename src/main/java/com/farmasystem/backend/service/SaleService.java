@@ -25,17 +25,29 @@ public class SaleService {
         Sale sale = new Sale();
         sale.setCreatedAt(LocalDateTime.now());
         sale.setClientDoc(request.getClientDni());
+        sale.setClientName(request.getClientName());
         
         BigDecimal totalSaleAmount = BigDecimal.ZERO;
         List<SaleDetail> details = new ArrayList<>();
 
         for (SaleRequest.SaleItemRequest item : request.getItems()) {
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + item.getProductId()));
+            
+            // --- CORRECCIÓN FINAL: Guardamos en variable local ---
+            Long productId = item.getProductId();
 
-            List<Batch> batches = batchRepository.findAvailableBatches(item.getProductId());
+            if (productId == null) {
+                throw new IllegalArgumentException("El ID del producto es obligatorio");
+            }
+
+            // Ahora usamos 'productId' (variable local segura) en lugar de 'item.getProductId()'
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + productId));
+
+            List<Batch> batches = batchRepository.findAvailableBatches(productId);
             
             int quantityNeeded = item.getQuantity();
+            
+            // Calculamos stock total disponible
             int stockAvailable = batches.stream().mapToInt(Batch::getStock).sum();
 
             if (stockAvailable < quantityNeeded) {
