@@ -17,19 +17,39 @@ public class ProductController {
 
     private final ProductService productService;
 
-    // Obtener todos los productos (Para la tabla de inventario)
     @GetMapping
     public ResponseEntity<List<Product>> getAll() {
         return ResponseEntity.ok(productService.getAllProducts());
     }
 
-    // Crear un nuevo producto
     @PostMapping
     public ResponseEntity<Product> create(@RequestBody ProductRequest request) {
         return ResponseEntity.ok(productService.createProduct(request));
     }
 
-    // Agregar stock (nuevo lote) a un producto existente
+    // --- NUEVO: IMPORTACIÓN MASIVA (Recibe lista de productos) ---
+    @PostMapping("/import")
+    public ResponseEntity<List<Product>> importProducts(@RequestBody List<ProductRequest> requests) {
+        // En un sistema real, esto iría en un servicio @Transactional batch
+        List<Product> saved = requests.stream()
+                .map(productService::createProduct)
+                .toList();
+        return ResponseEntity.ok(saved);
+    }
+
+    // --- NUEVO: EDITAR ---
+    @PutMapping("/{id}")
+    public ResponseEntity<Product> update(@PathVariable Long id, @RequestBody ProductRequest request) {
+        return ResponseEntity.ok(productService.updateProduct(id, request));
+    }
+
+    // --- NUEVO: ELIMINAR (Soft Delete) ---
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/batches")
     public ResponseEntity<?> addBatch(@PathVariable Long id, @RequestBody ProductRequest.BatchRequest batchRequest) {
         return ResponseEntity.ok(productService.addBatchToProduct(id, batchRequest));

@@ -32,6 +32,8 @@ public class ProductService {
         product.setSalePrice(request.getSalePrice());
         product.setMinStock(request.getMinStock());
         product.setCreatedAt(LocalDateTime.now());
+
+        product.setProvider(request.getProvider());
         
         
         Product savedProduct = productRepository.save(product);
@@ -41,6 +43,27 @@ public class ProductService {
         }
 
         return savedProduct;
+    }
+
+    @Transactional
+    public Product updateProduct(Long id, ProductRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        
+        product.setName(request.getName());
+        product.setSku(request.getSku());
+        product.setBarcode(request.getBarcode());
+        product.setSalePrice(request.getSalePrice());
+        product.setMinStock(request.getMinStock());
+        product.setProvider(request.getProvider());
+        
+        return productRepository.save(product);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        // Gracias a @SQLDelete en la entidad, esto hace un borrado lógico
+        productRepository.deleteById(id);
     }
 
     @Transactional

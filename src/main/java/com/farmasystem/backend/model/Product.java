@@ -32,6 +32,9 @@ public class Product extends BaseEntity {
     @Column(name = "min_stock")
     private Integer minStock;
 
+    @Column(name = "provider")
+    private String provider; 
+
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<Batch> batches;
 }

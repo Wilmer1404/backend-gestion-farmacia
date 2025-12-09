@@ -1,5 +1,6 @@
 package com.farmasystem.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // <--- IMPORTANTE
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ public class SaleDetail {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sale_id", nullable = false)
+    @JsonIgnore // <--- ESTO CORTA EL BUCLE INFINITO
     private Sale sale;
 
     @ManyToOne(fetch = FetchType.LAZY)

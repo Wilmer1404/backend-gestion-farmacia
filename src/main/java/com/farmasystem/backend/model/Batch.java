@@ -1,5 +1,6 @@
 package com.farmasystem.backend.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // <--- AGREGAR IMPORT
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
@@ -11,7 +12,7 @@ import java.time.LocalDate;
 @Table(name = "batches")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 @SQLDelete(sql = "UPDATE batches SET deleted = true WHERE id = ?")
-@SQLRestriction("deleted = false") 
+@SQLRestriction("deleted = false")
 public class Batch extends BaseEntity {
 
     @Id
@@ -30,7 +31,9 @@ public class Batch extends BaseEntity {
     @Column(name = "purchase_price", precision = 10, scale = 2)
     private BigDecimal purchasePrice;
 
+    // --- AQUÍ ESTÁ EL CAMBIO ---
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
+    @JsonIgnore // <--- ESTO ROMPE EL BUCLE INFINITO
     private Product product;
 }

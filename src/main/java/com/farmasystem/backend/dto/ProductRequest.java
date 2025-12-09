@@ -12,6 +12,8 @@ public class ProductRequest {
     private BigDecimal salePrice;
     private Integer minStock;
 
+    private String provider;
+
     private BatchRequest initialBatch;
 
     @Data
