@@ -2,12 +2,16 @@ package com.farmasystem.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "batches")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@SQLDelete(sql = "UPDATE batches SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false") 
 public class Batch extends BaseEntity {
 
     @Id

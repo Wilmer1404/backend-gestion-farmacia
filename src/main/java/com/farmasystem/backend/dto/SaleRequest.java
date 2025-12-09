@@ -1,9 +1,10 @@
 package com.farmasystem.backend.dto;
 
-import lombok.Data; // <--- Magia
+import jakarta.validation.constraints.NotNull; // Importante
+import lombok.Data;
 import java.util.List;
 
-@Data 
+@Data
 public class SaleRequest {
     private Long sellerId;
     private String clientDni;
@@ -11,7 +12,9 @@ public class SaleRequest {
 
     @Data
     public static class SaleItemRequest {
+        @NotNull(message = "El ID del producto es obligatorio") 
         private Long productId;
+        
         private Integer quantity;
     }
 }
