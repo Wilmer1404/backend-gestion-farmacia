@@ -36,7 +36,7 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
-        if (request.getInitialBatch() != null) {
+        if (savedProduct.getId() != null) {
             addBatchToProduct(savedProduct.getId(), request.getInitialBatch());
         }
 
