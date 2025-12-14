@@ -8,10 +8,10 @@ import com.farmasystem.backend.repository.UserRepository;
 import com.farmasystem.backend.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize; // <--- Para el register
+import org.springframework.security.access.prepost.PreAuthorize; 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.password.PasswordEncoder; // <--- Para el register
+import org.springframework.security.crypto.password.PasswordEncoder; 
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,21 +26,18 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        // 1. Autenticar
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
 
-        // 2. Buscar usuario en BD (Aquí sí tenemos el fullName)
         User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
-        
-        // 3. Generar Token
         String token = jwtService.generateToken(user);
 
         return ResponseEntity.ok(AuthResponse.builder()
                 .token(token)
                 .role(user.getRole().name())
-                .fullName(user.getFullName()) // <--- Ahora sí funciona (viene de User, no de AuthRequest)
+                .fullName(user.getFullName())
+                .id(user.getId()) // <--- ENVIAR EL ID
                 .build());
     }
 

@@ -31,37 +31,29 @@ public class SaleService {
         List<SaleDetail> details = new ArrayList<>();
 
         for (SaleRequest.SaleItemRequest item : request.getItems()) {
-            
-            // --- CORRECCIÓN FINAL: Guardamos en variable local ---
             Long productId = item.getProductId();
+            if (productId == null) throw new IllegalArgumentException("ID de producto obligatorio");
 
-            if (productId == null) {
-                throw new IllegalArgumentException("El ID del producto es obligatorio");
-            }
-
-            // Ahora usamos 'productId' (variable local segura) en lugar de 'item.getProductId()'
-            Product product = productRepository.findById(productId)
+            // --- CORRECCIÓN AQUÍ: Usamos findByIdWithBatches ---
+            // Esto asegura que el producto venga con sus lotes cargados y no falle al responder el JSON
+            Product product = productRepository.findByIdWithBatches(productId)
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado ID: " + productId));
 
             List<Batch> batches = batchRepository.findAvailableBatches(productId);
             
             int quantityNeeded = item.getQuantity();
-            
-            // Calculamos stock total disponible
             int stockAvailable = batches.stream().mapToInt(Batch::getStock).sum();
 
             if (stockAvailable < quantityNeeded) {
                 throw new RuntimeException("Stock insuficiente para: " + product.getName());
             }
 
+            // Descontar del inventario (Lógica FEFO)
             for (Batch batch : batches) {
                 if (quantityNeeded <= 0) break;
-
                 int takeFromBatch = Math.min(batch.getStock(), quantityNeeded);
-                
                 batch.setStock(batch.getStock() - takeFromBatch);
                 batchRepository.save(batch); 
-
                 quantityNeeded -= takeFromBatch;
             }
 

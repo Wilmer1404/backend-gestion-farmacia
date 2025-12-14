@@ -8,12 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.sql.Date; // Importante para manejar fechas de SQL
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,66 +25,66 @@ public class ReportService {
     public ReportDTO.KpiStats getKpiStats() {
         LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
         LocalDateTime endOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
-        
         LocalDateTime startOfMonth = LocalDate.now().withDayOfMonth(1).atStartOfDay();
 
         BigDecimal salesToday = saleRepository.sumTotalSalesBetween(startOfDay, endOfDay);
         BigDecimal salesMonth = saleRepository.sumTotalSalesBetween(startOfMonth, endOfDay);
         Long countToday = saleRepository.countSalesBetween(startOfDay, endOfDay);
 
-        // Para productos con bajo stock, usamos una consulta que carga también los batches
-        long lowStock = productRepository.findAllWithBatches().stream()
-            .filter(p -> {
-                int totalStock = p.getBatches().stream().mapToInt(Batch::getStock).sum();
-                return totalStock <= (p.getMinStock() != null ? p.getMinStock() : 0);
-            })
-            .count();
+        // Lógica para contar stock bajo (usando findAllActiveProducts para optimizar)
+        long lowStock = productRepository.findAllWithBatches().stream() // <--- CAMBIO AQUÍ
+                .filter(p -> {
+                    int totalStock = p.getBatches().stream().mapToInt(Batch::getStock).sum();
+                    return totalStock <= p.getMinStock();
+                })
+                .count();
 
         return new ReportDTO.KpiStats(
-            salesToday, 
-            salesMonth, 
-            countToday, 
-            lowStock
-        );
+                salesToday != null ? salesToday : BigDecimal.ZERO,
+                salesMonth != null ? salesMonth : BigDecimal.ZERO,
+                countToday != null ? countToday : 0L,
+                lowStock);
     }
 
     public List<ReportDTO.SalesByDate> getSalesChart() {
-        // Últimos 7 días
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+
+        // 1. Obtenemos datos crudos del repo (Object[])
         List<Object[]> rawData = saleRepository.getSalesDataGroupedByDate(sevenDaysAgo);
-        
-        // Convertimos Object[] a DTOs - manejamos diferentes tipos de fecha
-        return rawData.stream()
-            .map(row -> {
-                Object dateObj = row[0];
-                BigDecimal total = (BigDecimal) row[1];
-                
-                String dateStr;
-                if (dateObj instanceof LocalDate) {
-                    dateStr = ((LocalDate) dateObj).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                } else if (dateObj instanceof java.sql.Date) {
-                    dateStr = ((java.sql.Date) dateObj).toLocalDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                } else {
-                    dateStr = dateObj.toString();
-                }
-                
-                return new ReportDTO.SalesByDate(dateStr, total);
-            })
-            .collect(Collectors.toList());
+
+        // 2. Transformamos manualmente a DTO
+        List<ReportDTO.SalesByDate> chartData = new ArrayList<>();
+
+        for (Object[] row : rawData) {
+            // row[0] es la Fecha, row[1] es el Total
+            String dateStr = row[0].toString();
+            BigDecimal total = (BigDecimal) row[1];
+
+            chartData.add(new ReportDTO.SalesByDate(dateStr, total));
+        }
+
+        return chartData;
     }
 
     public List<ReportDTO.TopProduct> getTopProducts() {
+        // 1. Obtenemos datos crudos (Object[])
         List<Object[]> rawData = productRepository.getTopSellingProductsData();
-        
-        // Convertimos Object[] a DTOs y limitamos a 5 resultados
-        return rawData.stream()
-            .limit(5)
-            .map(row -> {
-                String productName = (String) row[0];
-                Long quantitySold = (Long) row[1];
-                BigDecimal totalRevenue = (BigDecimal) row[2];
-                return new ReportDTO.TopProduct(productName, quantitySold, totalRevenue);
-            })
-            .collect(Collectors.toList());
+
+        // 2. Transformamos manualmente a DTO (Limitamos a 5 aquí si la query no lo
+        // tiene)
+        List<ReportDTO.TopProduct> topProducts = new ArrayList<>();
+
+        for (Object[] row : rawData) {
+            if (topProducts.size() >= 5)
+                break; // Aseguramos máx 5
+
+            String name = (String) row[0];
+            Long quantity = ((Number) row[1]).longValue(); // Casteo seguro para números
+            BigDecimal revenue = (BigDecimal) row[2];
+
+            topProducts.add(new ReportDTO.TopProduct(name, quantity, revenue));
+        }
+
+        return topProducts;
     }
 }

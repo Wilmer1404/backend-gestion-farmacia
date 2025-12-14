@@ -1,6 +1,6 @@
 package com.farmasystem.backend.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore; // <--- IMPORTANTE
+import com.fasterxml.jackson.annotation.JsonIgnore; // <--- IMPORTAR ESTO
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -14,12 +14,12 @@ public class SaleDetail {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "sale_id", nullable = false)
-    @JsonIgnore // <--- ESTO CORTA EL BUCLE INFINITO
+    @JsonIgnore // <--- ESTO ES LA CLAVE. Evita el bucle infinito.
     private Sale sale;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 

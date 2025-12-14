@@ -3,6 +3,8 @@ package com.farmasystem.backend.controller;
 import com.farmasystem.backend.dto.ProductRequest;
 import com.farmasystem.backend.model.Product;
 import com.farmasystem.backend.service.ProductService;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,7 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> create(@RequestBody ProductRequest request) {
+    public ResponseEntity<Product> create(@Valid @RequestBody ProductRequest request) {
         return ResponseEntity.ok(productService.createProduct(request));
     }
 
